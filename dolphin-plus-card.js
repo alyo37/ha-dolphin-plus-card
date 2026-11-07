@@ -52,6 +52,10 @@ class DolphinPlusCard extends HTMLElement {
 
     if (!Array.isArray(availableModes)) availableModes = [];
 
+    // Filtre les modes non désirés
+    const excluded = ['pickup', 'return', 'home'];
+    availableModes = availableModes.filter(m => !excluded.includes(String(m).toLowerCase()));
+
     const modes = availableModes.length > 0
       ? availableModes.map(m => ({ value: m, label: m }))
       : [{ value: fanMode, label: fanMode }];
@@ -218,21 +222,19 @@ class DolphinPlusCard extends HTMLElement {
         </div>
 
         <div class="controls">
-          <button class="btn ${isOn ? 'danger' : 'primary'}" id="power-btn">
+          <button class="btn ${isOn ? 'danger' : 'primary'}" id="power-btn" style="grid-column: span 2;">
             ${isOn ? '⏹ Arrêter' : '▶ Démarrer'}
           </button>
-          <button class="btn" id="home-btn">🏠 Rentrer</button>
         </div>
       </ha-card>
     `;
 
     this.shadowRoot.getElementById('power-btn')?.addEventListener('click', () => {
-      const service = isOn ? 'stop' : 'start';
-      this._hass.callService('vacuum', service, { entity_id: this._config.entity });
-    });
-
-    this.shadowRoot.getElementById('home-btn')?.addEventListener('click', () => {
-      this._hass.callService('vacuum', 'return_to_base', { entity_id: this._config.entity });
+      if (isOn) {
+        this._hass.callService('vacuum', 'pause', { entity_id: this._config.entity });
+      } else {
+        this._hass.callService('vacuum', 'start', { entity_id: this._config.entity });
+      }
     });
 
     const modeSelect = this.shadowRoot.getElementById('mode-select');
