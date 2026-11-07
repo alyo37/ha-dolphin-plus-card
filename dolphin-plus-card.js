@@ -23,7 +23,7 @@ class DolphinPlusCard extends HTMLElement {
   }
 
   getCardSize() {
-    return 5;
+    return 4;
   }
 
   render() {
@@ -43,23 +43,27 @@ class DolphinPlusCard extends HTMLElement {
     const statusLabel = this.getStatusLabel(state);
     const statusColor = this.getStatusColor(state);
 
-    const modes = [
-      { value: 'all', label: 'Regular (Complet)' },
-      { value: 'short', label: 'Fast (Fond)' },
-      { value: 'floor', label: 'Floor only' },
-      { value: 'water', label: 'Water line' },
-      { value: 'ultra', label: 'Ultra clean' }
-    ];
+    // Modes dynamiques depuis l'entité vacuum
+    const availableModes = entity.attributes.fan_speed_list || entity.attributes.fan_speeds || [];
+    const modes = availableModes.length > 0
+      ? availableModes.map(m => ({ value: m, label: this.prettyMode(m) }))
+      : [
+          { value: 'all', label: 'Regular' },
+          { value: 'short', label: 'Fast' },
+          { value: 'floor', label: 'Floor only' },
+          { value: 'water', label: 'Water line' },
+          { value: 'ultra', label: 'Ultra clean' }
+        ];
 
     this.shadowRoot.innerHTML = `
       <style>
         :host { display: block; font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif; }
         .card {
           background: linear-gradient(160deg, #0f172a 0%, #1e293b 70%, #0f172a 100%);
-          border-radius: 20px;
-          padding: 18px;
+          border-radius: 16px;
+          padding: 12px 14px;
           color: white;
-          box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+          box-shadow: 0 4px 20px rgba(0,0,0,0.35);
           position: relative;
           overflow: hidden;
         }
@@ -97,9 +101,9 @@ class DolphinPlusCard extends HTMLElement {
         }
         .robot {
           text-align: center;
-          font-size: 5.2rem;
-          margin: 4px 0 12px;
-          filter: drop-shadow(0 6px 12px rgba(0,0,0,0.45));
+          font-size: 3.6rem;
+          margin: 0 0 6px;
+          filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
           transition: transform 0.4s ease;
         }
         .robot.cleaning { animation: float 2.4s ease-in-out infinite; }
@@ -109,9 +113,9 @@ class DolphinPlusCard extends HTMLElement {
         }
         .info-box {
           background: rgba(30,41,59,0.65);
-          border-radius: 14px;
-          padding: 12px 14px;
-          margin: 8px 0;
+          border-radius: 12px;
+          padding: 8px 12px;
+          margin: 6px 0;
           border: 1px solid rgba(71,85,105,0.5);
         }
         .info-row {
@@ -135,16 +139,16 @@ class DolphinPlusCard extends HTMLElement {
         .controls {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 10px;
-          margin-top: 14px;
+          gap: 8px;
+          margin-top: 10px;
         }
         .btn {
           background: #334155;
           border: none;
-          border-radius: 14px;
-          padding: 14px;
+          border-radius: 12px;
+          padding: 10px;
           color: white;
-          font-size: 0.98rem;
+          font-size: 0.92rem;
           font-weight: 600;
           cursor: pointer;
           transition: all 0.2s;
@@ -211,6 +215,18 @@ class DolphinPlusCard extends HTMLElement {
         });
       });
     }
+  }
+
+  prettyMode(mode) {
+    const map = {
+      'all': 'Regular',
+      'short': 'Fast',
+      'floor': 'Floor only',
+      'water': 'Water line',
+      'ultra': 'Ultra clean',
+      'pickup': 'Pickup'
+    };
+    return map[mode] || mode;
   }
 
   getStatusLabel(state) {
